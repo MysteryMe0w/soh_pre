@@ -1,6 +1,7 @@
 .anaconda/
 .cache/
 .conda/
+.cursor-server/
 .config/
 .dotnet/
 .keras/
