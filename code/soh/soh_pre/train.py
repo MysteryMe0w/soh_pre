@@ -612,4 +612,78 @@ model_names = [
 for model_name in model_names:
     train_model(model_name, X_train, y_train, epochs_dict, save_dir, exp_name)
 
+
 print("Training complete. All models saved.")
+
+
+# ============ 保存Baseline结果用于对比 ============
+def save_baseline_results():
+    """保存baseline模型的测试结果"""
+    import time
+    from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+    from tensorflow.keras.models import load_model
+
+    model_path = os.path.join(save_dir, f"{exp_name}_Transformer-CNN-BiLSTM.h5")
+
+    if not os.path.exists(model_path):
+        print("错误: Baseline模型未找到")
+        return
+
+    # 加载模型
+    model = load_model(model_path)
+
+    # 预测
+    start_time = time.time()
+    y_pred_test = model.predict(X_test, verbose=0)
+    inference_time = time.time() - start_time
+
+    # 计算指标
+    test_mse = mean_squared_error(y_test, y_pred_test)
+    test_mae = mean_absolute_error(y_test, y_pred_test)
+    test_rmse = np.sqrt(test_mse)
+    test_r2 = r2_score(y_test, y_pred_test)
+
+    # 创建baseline目录
+    baseline_dir = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "models/baseline"
+    )
+    os.makedirs(baseline_dir, exist_ok=True)
+
+    # 保存预测结果
+    np.save(os.path.join(baseline_dir, "y_test.npy"), y_test)
+    np.save(os.path.join(baseline_dir, "y_pred.npy"), y_pred_test)
+
+    # 保存指标
+    baseline_results = {
+        "model_name": "Transformer-CNN-BiLSTM",
+        "test_label": test_label,
+        "test_metrics": {
+            "mse": float(test_mse),
+            "mae": float(test_mae),
+            "rmse": float(test_rmse),
+            "r2": float(test_r2),
+        },
+        "inference_time_seconds": float(inference_time),
+        "hyperparameters": {
+            "embed_dim": 32,
+            "num_heads": 2,
+            "ff_dim": 32,
+            "transformer_dropout": 0.1,
+            "cnn_filters": 16,
+            "cnn_kernel_size": 2,
+            "lstm_units": 32,
+            "final_dropout": 0.5,
+            "epochs": epochs_dict.get("Transformer-CNN-BiLSTM", 100),
+        },
+    }
+
+    with open(os.path.join(baseline_dir, "baseline_metrics.json"), "w") as f:
+        json.dump(baseline_results, f, indent=2)
+
+    print(f"\nBaseline结果已保存至: {baseline_dir}")
+    print(f"测试集 MSE: {test_mse:.6f}")
+    print(f"测试集 R²: {test_r2:.4f}")
+
+
+# 在训练完成后调用
+save_baseline_results()

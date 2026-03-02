@@ -1,1 +1,1 @@
-Average prediction time per sample: 0.006559 seconds
+Average prediction time per sample: 0.009004 seconds

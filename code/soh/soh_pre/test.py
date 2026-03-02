@@ -15,7 +15,10 @@ elif platform.system() == "Darwin":
 plt.rcParams["axes.unicode_minus"] = False
 # 加载文件夹中的数据
 import os
-folder_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Dataset/1. BatteryAgingARC-FY08Q4")
+
+folder_path = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "Dataset/1. BatteryAgingARC-FY08Q4"
+)
 
 # 预测步长
 predict_step = 5
@@ -602,36 +605,41 @@ except ImportError:
     except ImportError:
         from tensorflow.keras.utils import register_keras_serializable
 
+
 @register_keras_serializable(package="Custom", name="SafeSimpleRNN")
 class SafeSimpleRNN(SimpleRNN):
     def __init__(self, *args, **kwargs):
-        kwargs.pop('time_major', None)
+        kwargs.pop("time_major", None)
         super().__init__(*args, **kwargs)
+
 
 @register_keras_serializable(package="Custom", name="SafeLSTM")
 class SafeLSTM(LSTM):
     def __init__(self, *args, **kwargs):
-        kwargs.pop('time_major', None)
+        kwargs.pop("time_major", None)
         super().__init__(*args, **kwargs)
+
 
 @register_keras_serializable(package="Custom", name="SafeGRU")
 class SafeGRU(GRU):
     def __init__(self, *args, **kwargs):
-        kwargs.pop('time_major', None)
+        kwargs.pop("time_major", None)
         super().__init__(*args, **kwargs)
+
 
 @register_keras_serializable(package="Custom", name="SafeBidirectional")
 class SafeBidirectional(Bidirectional):
     def __init__(self, layer, **kwargs):
-        kwargs.pop('time_major', None)
+        kwargs.pop("time_major", None)
         super().__init__(layer, **kwargs)
+
 
 @register_keras_serializable(package="Custom", name="SafeMultiHeadAttention")
 class SafeMultiHeadAttention(MultiHeadAttention):
     def __init__(self, *args, **kwargs):
-        kwargs.pop('query_shape', None)
-        kwargs.pop('key_shape', None)
-        kwargs.pop('value_shape', None)
+        kwargs.pop("query_shape", None)
+        kwargs.pop("key_shape", None)
+        kwargs.pop("value_shape", None)
         super().__init__(*args, **kwargs)
 
 
@@ -642,15 +650,15 @@ def test_model(
     # 加载模型
     model_path = os.path.join(save_dir, f"{exp_name}_{model_name}.h5")
     print(f"加载模型: {model_path}")
-    
+
     custom_objects = {
         "SimpleRNN": SafeSimpleRNN,
         "LSTM": SafeLSTM,
         "GRU": SafeGRU,
         "Bidirectional": SafeBidirectional,
-        "MultiHeadAttention": SafeMultiHeadAttention
+        "MultiHeadAttention": SafeMultiHeadAttention,
     }
-    
+
     try:
         model = load_model(model_path, compile=False, custom_objects=custom_objects)
     except Exception as e:
@@ -677,10 +685,10 @@ def test_model(
                         model.load_weights(model_path)
                         print("LSTM 修复加载成功。")
                     except Exception as e4:
-                         raise e4
+                        raise e4
                 else:
                     raise e3
-        
+
     print(f"模型 {model_name} 加载完成。")
 
     # 预测
