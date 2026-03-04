@@ -22,6 +22,9 @@ from datetime import datetime
 import logging
 
 warnings.filterwarnings("ignore")
+os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "3")
+import tensorflow as tf
+tf.get_logger().setLevel("ERROR")
 
 # 设置日志
 logging.basicConfig(
@@ -270,7 +273,7 @@ class ImprovedPSOOptimizerV1:
                 verbose=0,
             )
 
-            y_pred = model.predict(self.X_val, verbose=0)
+            y_pred = model(self.X_val, training=False).numpy()
 
             mse = float(mean_squared_error(self.y_val, y_pred))
             mae = float(mean_absolute_error(self.y_val, y_pred))

@@ -2,12 +2,12 @@
   "model_name": "Transformer-CNN-BiLSTM",
   "test_label": "B0005",
   "test_metrics": {
-    "mse": 0.0011839142590919275,
-    "mae": 0.024924617644798863,
-    "rmse": 0.03440805514835047,
-    "r2": 0.9763485282321362
+    "mse": 0.001078892331604226,
+    "mae": 0.023287284445997945,
+    "rmse": 0.03284649648903557,
+    "r2": 0.9784465882342914
   },
-  "inference_time_seconds": 0.6075294017791748,
+  "inference_time_seconds": 0.724743127822876,
   "hyperparameters": {
     "embed_dim": 32,
     "num_heads": 2,
