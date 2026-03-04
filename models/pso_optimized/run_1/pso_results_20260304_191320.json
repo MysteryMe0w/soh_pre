@@ -1,0 +1,51 @@
+{
+  "best_params": {
+    "embed_dim": 93,
+    "num_heads": 3,
+    "ff_dim": 45,
+    "transformer_dropout": 0.2217242784409772,
+    "cnn_filters": 54,
+    "cnn_kernel_size": 2,
+    "lstm_units": 69,
+    "final_dropout": 0.2191463437376895,
+    "learning_rate": 0.001982980856335877
+  },
+  "best_mse": 0.0012854085400052916,
+  "best_metrics": {
+    "mse": 0.0012854085400052916,
+    "mae": 0.025635784598116277,
+    "rmse": 0.03585259460632231,
+    "r2": 0.9787068688872563,
+    "final_val_loss": 0.0012854085071012378,
+    "epochs_trained": 30.0
+  },
+  "optimization_config": {
+    "n_particles": 8,
+    "max_iter": 15,
+    "w_start": 0.9,
+    "w_end": 0.4,
+    "c1": 2.0,
+    "c2": 2.0,
+    "v_max": 0.3,
+    "patience": 5,
+    "train_epochs": 30
+  },
+  "history": {
+    "iterations": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "global_best_scores": [
+      0.0012854085400052916,
+      0.0012854085400052916,
+      0.0012854085400052916,
+      0.0012854085400052916,
+      0.0012854085400052916
+    ],
+    "convergence_iteration": 5
+  },
+  "timestamp": "20260304_191320"
+}

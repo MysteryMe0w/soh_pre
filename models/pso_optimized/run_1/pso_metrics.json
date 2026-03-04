@@ -1,0 +1,32 @@
+{
+  "run_id": 1,
+  "seed": 42,
+  "best_params": {
+    "embed_dim": 93,
+    "num_heads": 3,
+    "ff_dim": 45,
+    "transformer_dropout": 0.2217242784409772,
+    "cnn_filters": 54,
+    "cnn_kernel_size": 2,
+    "lstm_units": 69,
+    "final_dropout": 0.2191463437376895,
+    "learning_rate": 0.001982980856335877
+  },
+  "pso_optimization_time_minutes": 10.4255,
+  "final_training_time_seconds": 19.69,
+  "total_time_minutes": 10.7536,
+  "validation_metrics": {
+    "mse": 0.0012854085400052916,
+    "mae": 0.025635784598116277,
+    "rmse": 0.03585259460632231,
+    "r2": 0.9787068688872563
+  },
+  "test_metrics": {
+    "mse": 0.0012110128782332663,
+    "mae": 0.02417685168568571,
+    "rmse": 0.03479961031726169,
+    "r2": 0.9758071695816702
+  },
+  "epochs_trained": 50,
+  "timestamp": "2026-03-04 19:13:44"
+}

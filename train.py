@@ -539,8 +539,16 @@ import random
 import numpy as np
 import tensorflow as tf
 import warnings
+import json
 
 warnings.filterwarnings("ignore")
+
+# 屏蔽 absl/Keras 的 H5 格式警告
+try:
+    import absl.logging
+    absl.logging.set_verbosity(absl.logging.ERROR)
+except Exception:
+    pass
 
 
 def set_seed(seed=42):
@@ -587,6 +595,7 @@ def train_model(model_name, X_train, y_train, epochs_dict, save_dir, exp_name):
     model_save_path = os.path.join(save_dir, f"{exp_name}_{model_name}.h5")
     model.save(model_save_path)
     print(f"Model {model_name} saved at: {model_save_path}")
+    return model
 
 
 # 创建保存目录
@@ -609,28 +618,23 @@ model_names = [
     "Transformer",
     "Transformer-CNN-BiLSTM",
 ]
+trained_models = {}
 for model_name in model_names:
-    train_model(model_name, X_train, y_train, epochs_dict, save_dir, exp_name)
+    trained_models[model_name] = train_model(model_name, X_train, y_train, epochs_dict, save_dir, exp_name)
 
 
 print("Training complete. All models saved.")
 
 
 # ============ 保存Baseline结果用于对比 ============
-def save_baseline_results():
+def save_baseline_results(model):
     """保存baseline模型的测试结果"""
     import time
     from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
-    from tensorflow.keras.models import load_model
 
-    model_path = os.path.join(save_dir, f"{exp_name}_Transformer-CNN-BiLSTM.h5")
-
-    if not os.path.exists(model_path):
+    if model is None:
         print("错误: Baseline模型未找到")
         return
-
-    # 加载模型
-    model = load_model(model_path)
 
     # 预测
     start_time = time.time()
@@ -686,4 +690,4 @@ def save_baseline_results():
 
 
 # 在训练完成后调用
-save_baseline_results()
+save_baseline_results(trained_models.get("Transformer-CNN-BiLSTM"))
