@@ -84,15 +84,15 @@ class ImprovedPSOOptimizerV1:
         self._setup_gpu()
 
         self.param_bounds = {
-            "embed_dim": [32, 128],
-            "num_heads": [2, 4],
-            "ff_dim": [32, 128],
+            "embed_dim": [16, 64],       # baseline=32, 收紧范围
+            "num_heads": [1, 4],         # baseline=2
+            "ff_dim": [16, 64],          # baseline=32, 收紧范围
             "transformer_dropout": [0.05, 0.3],
-            "cnn_filters": [16, 64],
+            "cnn_filters": [8, 48],      # baseline=16, 收紧范围
             "cnn_kernel_size": [2, 5],
-            "lstm_units": [32, 128],
-            "final_dropout": [0.2, 0.6],
-            "learning_rate": [0.0005, 0.005],
+            "lstm_units": [16, 64],      # baseline=32, 收紧范围
+            "final_dropout": [0.3, 0.7], # baseline=0.5, 围绕中心搜索
+            "learning_rate": [0.0003, 0.01],  # 更宽的学习率范围
         }
 
         self.int_params = [
@@ -197,7 +197,7 @@ class ImprovedPSOOptimizerV1:
 
             attention_output = MultiHeadAttention(
                 num_heads=params["num_heads"],
-                key_dim=params["embed_dim"] // params["num_heads"],
+                key_dim=params["embed_dim"],
             )(x, x)
             attention_output = Dropout(params["transformer_dropout"])(attention_output)
             out1 = LayerNormalization(epsilon=1e-6)(attention_output + x)
@@ -247,15 +247,15 @@ class ImprovedPSOOptimizerV1:
             callbacks = [
                 EarlyStopping(
                     monitor="val_loss",
-                    patience=self.patience,
+                    patience=15,                     # 训练早停 patience 固定为15
                     restore_best_weights=True,
                     verbose=0,
                 ),
                 ReduceLROnPlateau(
                     monitor="val_loss",
                     factor=0.5,
-                    patience=max(2, self.patience // 2),
-                    min_lr=1e-6,
+                    patience=5,
+                    min_lr=1e-7,
                     verbose=0,
                 ),
             ]
@@ -601,16 +601,16 @@ class FastPSOOptimizer(ImprovedPSOOptimizerV1):
 
     def __init__(self, X_train, y_train, X_val, y_val, **kwargs):
         fast_config = {
-            "n_particles": 8,
-            "max_iter": 15,
-            "train_epochs": 30,
-            "patience": 5,
+            "n_particles": 15,       # 8→15: 更多粒子覆盖搜索空间
+            "max_iter": 30,          # 15→30: 更多迭代轮次
+            "train_epochs": 100,     # 30→100: 与baseline训练轮数一致
+            "patience": 10,          # 5→10: 给PSO更多探索机会
             "w_start": 0.9,
-            "w_end": 0.4,
-            "c1": 2.0,
-            "c2": 2.0,
-            "v_max": 0.3,
-            "batch_size": 64,
+            "w_end": 0.3,            # 0.4→0.3: 后期更强的局部搜索
+            "c1": 1.5,               # 2.0→1.5: 降低认知系数
+            "c2": 2.5,               # 2.0→2.5: 增强社会系数，加速收敛
+            "v_max": 0.2,            # 0.3→0.2: 更细粒度的搜索步长
+            "batch_size": 16,        # 64→16: 与baseline一致
             "use_multi_gpu": True,
         }
         # 用户传入的 kwargs 优先级更高，可覆盖上述默认值

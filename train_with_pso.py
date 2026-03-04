@@ -96,7 +96,7 @@ def create_optimized_model(input_shape: tuple, params: dict) -> Model:
     # ── Transformer Encoder ───────────────────────────────────────
     x = Dense(embed_dim)(inputs)
 
-    attn_out = MultiHeadAttention(num_heads=num_heads, key_dim=embed_dim // num_heads)(
+    attn_out = MultiHeadAttention(num_heads=num_heads, key_dim=embed_dim)(
         x, x
     )
     attn_out = Dropout(t_drop)(attn_out)
@@ -200,9 +200,8 @@ def run_pso_optimization(run_id: int = 1, seed: int = 42) -> dict:
     final_model.summary()
 
     callbacks = [
-        # 监控验证集 loss，防止小数据集过拟合
         EarlyStopping(
-            monitor="val_loss", patience=30, restore_best_weights=True, verbose=1
+            monitor="val_loss", patience=50, restore_best_weights=True, verbose=1
         ),
         ReduceLROnPlateau(
             monitor="val_loss", factor=0.5, patience=10, min_lr=1e-8, verbose=1
@@ -213,8 +212,8 @@ def run_pso_optimization(run_id: int = 1, seed: int = 42) -> dict:
     history = final_model.fit(
         X_train_full,
         y_train_full,
-        epochs=200,
-        batch_size=64,  # 固定使用 batch_size=64（与 PSO 评估一致）
+        epochs=500,  # 增大上限，配合EarlyStopping自动停
+        batch_size=16,  # 与 baseline 训练一致
         validation_split=0.15,  # 留 15% 用于早停监控
         callbacks=callbacks,
         verbose=1,
