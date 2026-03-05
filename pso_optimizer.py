@@ -95,7 +95,7 @@ class ImprovedPSOOptimizerV1:
             "cnn_kernel_size": [2, 5],
             "lstm_units": [16, 64],      # baseline=32, 收紧范围
             "final_dropout": [0.3, 0.7], # baseline=0.5, 围绕中心搜索
-            "learning_rate": [0.0003, 0.01],  # 更宽的学习率范围
+            "learning_rate": [0.0003, 0.003],  # 收紧上界，避免过高学习率
         }
 
         self.int_params = [
@@ -165,10 +165,15 @@ class ImprovedPSOOptimizerV1:
 
         # 确保 embed_dim 能被 num_heads 整除（MultiHeadAttention 要求）
         if params["embed_dim"] % params["num_heads"] != 0:
-            params["embed_dim"] = (params["embed_dim"] // params["num_heads"]) * params[
-                "num_heads"
-            ]
-            params["embed_dim"] = max(params["num_heads"], params["embed_dim"])
+            # 向上对齐到最近的 num_heads 倍数，避免低于下界
+            aligned = ((params["embed_dim"] + params["num_heads"] - 1) // params["num_heads"]) * params["num_heads"]
+            min_embed = self.param_bounds["embed_dim"][0]
+            max_embed = self.param_bounds["embed_dim"][1]
+            params["embed_dim"] = int(np.clip(aligned, min_embed, max_embed))
+            # 如果 clip 后仍不整除，再做一次向下对齐
+            if params["embed_dim"] % params["num_heads"] != 0:
+                params["embed_dim"] = (params["embed_dim"] // params["num_heads"]) * params["num_heads"]
+                params["embed_dim"] = max(params["num_heads"], params["embed_dim"])
 
         return params
 

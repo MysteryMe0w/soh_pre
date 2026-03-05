@@ -146,14 +146,22 @@ def run_pso_optimization(run_id: int = 1, seed: int = 42) -> dict:
     X_test = X_normalized[battery_label == test_label]
     y_test = y_normalized[battery_label == test_label]
 
-    # 从完整训练集中切出验证集，供 PSO 内部评估（不碰测试集）
-    X_tr, X_val, y_tr, y_val = train_test_split(
-        X_train_full, y_train_full, test_size=0.2, random_state=seed
-    )
+    # ── 关键改进：Leave-One-Battery-Out 验证策略 ─────────────────
+    # 用与测试电池 B0005 同组（同工况）的 B0006 做验证电池
+    # 这样 PSO 优化的是"跨电池泛化能力"而非"同电池内插值"
+    val_battery = "B0006"
+    train_battery_mask = (battery_label != test_label) & (battery_label != val_battery)
+    val_battery_mask = (battery_label == val_battery)
 
+    X_tr = X_normalized[train_battery_mask]
+    y_tr = y_normalized[train_battery_mask]
+    X_val = X_normalized[val_battery_mask]
+    y_val = y_normalized[val_battery_mask]
+
+    logger.info(f"验证策略: Leave-One-Battery-Out (验证电池={val_battery})")
     logger.info(
         f"数据集大小 → 训练(PSO内): {X_tr.shape}  "
-        f"验证: {X_val.shape}  测试: {X_test.shape}"
+        f"验证({val_battery}): {X_val.shape}  测试({test_label}): {X_test.shape}"
     )
 
     # ── 保存目录 ──────────────────────────────────────────────────
