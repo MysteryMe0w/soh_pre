@@ -123,22 +123,29 @@ class ImprovedPSOOptimizerV1:
     def _setup_gpu(self):
         """配置GPU策略"""
         gpus = tf.config.list_physical_devices("GPU")
-        if gpus:
-            try:
-                for gpu in gpus:
-                    tf.config.experimental.set_memory_growth(gpu, True)
-
-                if self.use_multi_gpu and len(gpus) > 1:
-                    self.strategy = tf.distribute.MirroredStrategy()
-                    logger.info(f"✅ 使用 {len(gpus)} 个GPU进行并行训练")
-                else:
-                    self.strategy = tf.distribute.get_strategy()
-                    logger.info("✅ 使用单GPU训练")
-            except RuntimeError as e:
-                logger.warning(f"⚠️ GPU配置失败: {e}")
-                self.strategy = tf.distribute.get_strategy()
-        else:
+        if not gpus:
             logger.warning("⚠️ 未检测到GPU，使用CPU训练")
+            self.strategy = tf.distribute.get_strategy()
+            return
+
+        # set_memory_growth 必须在GPU初始化前调用，若已初始化则静默跳过
+        # （可通过环境变量 TF_FORCE_GPU_ALLOW_GROWTH=true 在导入TF前预先启用）
+        for gpu in gpus:
+            try:
+                tf.config.experimental.set_memory_growth(gpu, True)
+            except RuntimeError:
+                pass  # GPU已初始化，内存增长模式由环境变量控制
+
+        # MirroredStrategy 无需在GPU初始化前创建，单独处理
+        try:
+            if self.use_multi_gpu and len(gpus) > 1:
+                self.strategy = tf.distribute.MirroredStrategy()
+                logger.info(f"✅ 使用 {len(gpus)} 个GPU进行并行训练")
+            else:
+                self.strategy = tf.distribute.get_strategy()
+                logger.info(f"✅ 使用单GPU训练 (共检测到 {len(gpus)} 个GPU)")
+        except Exception as e:
+            logger.warning(f"⚠️ 分布式策略初始化失败: {e}，回退到默认策略")
             self.strategy = tf.distribute.get_strategy()
 
     # ─────────────────────────────────────────────────────────────

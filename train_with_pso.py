@@ -1,5 +1,9 @@
 import os
 import sys
+
+# ── 必须在 import tensorflow 之前设置，确保内存增长模式在GPU初始化前生效 ──
+os.environ.setdefault("TF_FORCE_GPU_ALLOW_GROWTH", "true")
+
 import json
 import time
 import numpy as np
